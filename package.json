@@ -1,0 +1,29 @@
+{
+  "name": "pixelcheck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Visual regression testing suite for design-to-dev verification",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "concurrently \"npm run dev -w packages/api\" \"npm run dev -w packages/dashboard\"",
+    "dev:dashboard": "npm run dev -w packages/dashboard",
+    "dev:cli": "npm run dev -w packages/cli",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "dev:api": "npm run dev -w packages/api"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

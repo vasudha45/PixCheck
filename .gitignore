@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.env.local
+pixelcheck-reports/
+.DS_Store
+*.log
+.turbo/
+coverage/
+.nyc_output/
+*.tsbuildinfo

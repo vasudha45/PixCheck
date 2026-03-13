@@ -1,0 +1,51 @@
+{
+  "storyId": "STORY-421",
+  "screens": [
+    {
+      "name": "Home Screen",
+      "designSource": "figma",
+      "figmaFileId": "YOUR_FIGMA_FILE_KEY",
+      "figmaNodeId": "123:456",
+      "platform": "web",
+      "url": "http://localhost:3000/",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "name": "Login Screen",
+      "designSource": "zeplin",
+      "zeplinProjectId": "YOUR_ZEPLIN_PROJECT_ID",
+      "zeplinScreenId": "YOUR_ZEPLIN_SCREEN_ID",
+      "platform": "web",
+      "url": "http://localhost:3000/login",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "name": "Product Detail (Mobile)",
+      "designSource": "figma",
+      "figmaFileId": "YOUR_FIGMA_FILE_KEY",
+      "figmaNodeId": "789:012",
+      "platform": "ios",
+      "deviceName": "iPhone 14 Pro",
+      "viewport": { "width": 393, "height": 852 }
+    },
+    {
+      "name": "Dashboard (Android)",
+      "designSource": "figma",
+      "figmaFileId": "YOUR_FIGMA_FILE_KEY",
+      "figmaNodeId": "345:678",
+      "platform": "android",
+      "deviceName": "Pixel 7",
+      "viewport": { "width": 1080, "height": 2400 }
+    }
+  ],
+  "output": {
+    "dir": "./pixelcheck-reports",
+    "formats": ["html", "json"],
+    "openOnComplete": true
+  },
+  "thresholds": {
+    "pixelMismatchPercent": 5,
+    "aiConfidenceMin": 0.6,
+    "overallScoreMin": 80
+  }
+}

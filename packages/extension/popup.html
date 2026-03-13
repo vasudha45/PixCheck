@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixelCheck Capture</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2a2a3a;
+      --border2: #353548;
+      --text: #e8e8f0;
+      --text2: #a8a8be;
+      --text3: #686880;
+      --purple: #a78bfa;
+      --purple-dim: rgba(167,139,250,0.12);
+      --pass: #34d399;
+      --fail: #f87171;
+      --warn: #fbbf24;
+      --radius: 8px;
+    }
+
+    body {
+      width: 340px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      background: var(--purple-dim);
+      border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo svg { width: 16px; height: 16px; }
+
+    .header-text h1 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 1px;
+    }
+
+    .server-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text3);
+      margin-left: auto;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .server-dot.connected { background: var(--pass); box-shadow: 0 0 0 2px rgba(52,211,153,0.2); }
+    .server-dot.error { background: var(--fail); }
+
+    /* Tab info bar */
+    .tab-info {
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-favicon {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: var(--border2);
+      flex-shrink: 0;
+    }
+
+    .tab-url {
+      font-size: 11.5px;
+      color: var(--text2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: 'SF Mono', 'Cascadia Code', monospace;
+    }
+
+    /* Main content */
+    .content { padding: 14px 16px; }
+
+    /* Story selector */
+    .field { margin-bottom: 12px; }
+
+    .field label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 5px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 12.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: rgba(167,139,250,0.5);
+    }
+
+    .field input::placeholder { color: var(--text3); }
+
+    /* Screen name row */
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+
+    /* Capture options */
+    .capture-opts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .capture-opt {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.12s;
+      background: var(--surface2);
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .capture-opt input[type=radio] { display: none; }
+
+    .capture-opt.selected {
+      border-color: rgba(167,139,250,0.4);
+      background: var(--purple-dim);
+      color: var(--purple);
+    }
+
+    .capture-opt-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      flex-shrink: 0;
+    }
+
+    .capture-opt.selected .capture-opt-dot {
+      background: var(--purple);
+      border-color: var(--purple);
+    }
+
+    /* Viewport override */
+    .viewport-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    /* Capture button */
+    .capture-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--purple);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      letter-spacing: -0.01em;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .capture-btn:hover { opacity: 0.9; }
+    .capture-btn:active { transform: scale(0.98); }
+    .capture-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Status / result */
+    .status {
+      display: none;
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 500;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .status.show { display: flex; }
+    .status.loading { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+    .status.success { background: rgba(52,211,153,0.08); color: var(--pass); border: 1px solid rgba(52,211,153,0.2); }
+    .status.error { background: rgba(248,113,113,0.08); color: var(--fail); border: 1px solid rgba(248,113,113,0.2); }
+
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Score badge shown after success */
+    .score-badge {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      align-items: center;
+      gap: 12px;
+    }
+
+    .score-badge.show { display: flex; }
+
+    .score-num {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .score-detail { font-size: 11.5px; color: var(--text3); line-height: 1.7; }
+    .score-link { color: var(--purple); cursor: pointer; text-decoration: none; font-weight: 500; }
+    .score-link:hover { text-decoration: underline; }
+
+    /* Server config */
+    .server-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .server-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      font-size: 11px;
+      font-family: 'SF Mono', monospace;
+      outline: none;
+    }
+
+    .server-row input:focus { color: var(--text2); }
+
+    /* Section divider */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: 8px;
+    }
+
+    /* Recent captures list */
+    .recent {
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 12px;
+    }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11.5px;
+    }
+
+    .recent-item:last-child { border-bottom: none; }
+
+    .recent-score {
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 32px;
+      text-align: right;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
+        <line x1="12" y1="2" x2="12" y2="22"/>
+        <line x1="2" y1="8.5" x2="22" y2="8.5"/>
+        <line x1="2" y1="15.5" x2="22" y2="15.5"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>PixelCheck</h1>
+      <p>Visual regression capture</p>
+    </div>
+    <div class="server-dot" id="serverDot" title="PixelCheck API server status"></div>
+  </div>
+
+  <!-- Active tab URL -->
+  <div class="tab-info">
+    <img class="tab-favicon" id="tabFavicon" src="" alt="" />
+    <span class="tab-url" id="tabUrl">Loading...</span>
+  </div>
+
+  <!-- Main form -->
+  <div class="content">
+
+    <!-- Story ID -->
+    <div class="field">
+      <label>Story / Ticket ID</label>
+      <input type="text" id="storyId" placeholder="e.g. STORY-421" />
+    </div>
+
+    <!-- Screen name + design source -->
+    <div class="row">
+      <div class="field" style="margin:0">
+        <label>Screen name</label>
+        <input type="text" id="screenName" placeholder="e.g. Home Screen" />
+      </div>
+      <div class="field" style="margin:0">
+        <label>Design source</label>
+        <select id="designSource">
+          <option value="figma">Figma</option>
+          <option value="zeplin">Zeplin</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Design ID fields -->
+    <div id="figmaFields">
+      <div class="row">
+        <div class="field" style="margin:0">
+          <label>Figma file ID</label>
+          <input type="text" id="figmaFileId" placeholder="abc123xyz" />
+        </div>
+        <div class="field" style="margin:0">
+          <label>Figma node ID</label>
+          <input type="text" id="figmaNodeId" placeholder="123:456" />
+        </div>
+      </div>
+    </div>
+
+    <div id="zeplinFields" style="display:none">
+      <div class="row">
+        <div class="field" style="margin:0">
+          <label>Zeplin project ID</label>
+          <input type="text" id="zeplinProjectId" placeholder="project-id" />
+        </div>
+        <div class="field" style="margin:0">
+          <label>Zeplin screen ID</label>
+          <input type="text" id="zeplinScreenId" placeholder="screen-id" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Capture mode -->
+    <div class="section-label" style="margin-top:4px">Capture mode</div>
+    <div class="capture-opts">
+      <label class="capture-opt selected" id="opt-viewport">
+        <input type="radio" name="captureMode" value="viewport" checked />
+        <div class="capture-opt-dot"></div>
+        Viewport only
+      </label>
+      <label class="capture-opt" id="opt-fullpage">
+        <input type="radio" name="captureMode" value="fullpage" />
+        <div class="capture-opt-dot"></div>
+        Full page
+      </label>
+      <label class="capture-opt" id="opt-element">
+        <input type="radio" name="captureMode" value="element" />
+        <div class="capture-opt-dot"></div>
+        Pick element
+      </label>
+      <label class="capture-opt" id="opt-selection">
+        <input type="radio" name="captureMode" value="selection" />
+        <div class="capture-opt-dot"></div>
+        Draw region
+      </label>
+    </div>
+
+    <!-- CSS selector (shown when element mode) -->
+    <div class="field" id="selectorField" style="display:none">
+      <label>CSS Selector</label>
+      <input type="text" id="cssSelector" placeholder=".main-content or #app" />
+    </div>
+
+    <!-- Capture button -->
+    <button class="capture-btn" id="captureBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        <path d="M16 16l4 4-4 4"/>
+      </svg>
+      Capture &amp; Compare
+    </button>
+
+    <!-- Status messages -->
+    <div class="status loading" id="statusLoading">
+      <div class="spinner"></div>
+      <span id="statusText">Capturing screenshot...</span>
+    </div>
+
+    <div class="status success" id="statusSuccess">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="successText">Captured! Running comparison...</span>
+    </div>
+
+    <div class="status error" id="statusError">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <span id="errorText">Something went wrong</span>
+    </div>
+
+    <!-- Score result -->
+    <div class="score-badge" id="scoreBadge">
+      <div class="score-num" id="scoreNum">--</div>
+      <div class="score-detail">
+        <div id="scoreIssues">-- issues found</div>
+        <div id="scoreMismatch">-- pixel mismatch</div>
+        <a class="score-link" id="scoreLink" href="#" target="_blank">View full report →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent captures -->
+  <div class="recent" id="recentSection" style="display:none">
+    <div class="section-label">Recent captures</div>
+    <div id="recentList"></div>
+  </div>
+
+  <!-- Server config row -->
+  <div class="server-row">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span>API:</span>
+    <input type="text" id="serverUrl" value="http://localhost:3001" placeholder="http://localhost:3001" />
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
