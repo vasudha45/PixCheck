@@ -25,7 +25,7 @@ export async function normalizeImages(
     sharp(design.imageBuffer)
       .resize(targetWidth, targetHeight, {
         fit: 'contain',
-        background: { r: 255, g: 255, b: 255, a: 255 },
+        background: { r: 255, g: 255, b: 255},
       })
       .ensureAlpha()
       .raw()
@@ -34,7 +34,7 @@ export async function normalizeImages(
     sharp(screenshot.imageBuffer)
       .resize(targetWidth, targetHeight, {
         fit: 'contain',
-        background: { r: 255, g: 255, b: 255, a: 255 },
+        background: { r: 255, g: 255, b: 255},
       })
       .ensureAlpha()
       .raw()
@@ -68,7 +68,7 @@ export async function resizePng(
   height: number
 ): Promise<Buffer> {
   return sharp(buffer)
-    .resize(width, height, { fit: 'contain', background: { r: 255, g: 255, b: 255, a: 255 } })
+    .resize(width, height, { fit: 'contain', background: { r: 255, g: 255, b: 255} })
     .png()
     .toBuffer();
 }
